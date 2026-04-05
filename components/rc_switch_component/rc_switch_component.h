@@ -3,34 +3,24 @@
 
 namespace rc_switch_component {
 
-// jednoduchý RCSwitch transmitér
 class RCSwitchTransmitter : public Component {
  public:
-  void setup() override {
-    // inicializácia, napríklad pin nastavíš neskôr cez lambda
-    ESP_LOGD("rc_switch", "RCSwitchTransmitter setup done");
-  }
+  void setup() override {}
+  void loop() override {}
 
-  void send(uint32_t code, uint8_t length) {
-    ESP_LOGD("rc_switch", "Sending code: %u with length: %u", code, length);
-    // sem vlož skutočný kód pre RC vysielač
+  void send_code(uint32_t code) {
+    // Tu pridáš kód na vysielanie 433MHz
+    ESP_LOGD("rc_switch", "Sending code: %u", code);
   }
 };
 
-// akcia pre script
 class SendRCSwitchAction : public Action {
  public:
   RCSwitchTransmitter *parent;
   uint32_t code;
 
-  void play(uint8_t repeat = 1) {
-    if (!parent) {
-      ESP_LOGW("rc_switch", "Parent transmitter not set!");
-      return;
-    }
-    for (uint8_t i = 0; i < repeat; i++) {
-      parent->send(code, 24);  // predpokladáme 24-bit kód
-    }
+  void play(uint32_t play_duration) override {
+    if (parent) parent->send_code(code);
   }
 };
 
