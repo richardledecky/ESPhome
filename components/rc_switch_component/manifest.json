@@ -1,8 +1,6 @@
 {
-  "domain": "rc_switch_component",
-  "name": "RC Switch Component",
-  "version": "1.0.0",
-  "codegen": true,
+  "esphome": ">=2026.0.0",
   "dependencies": [],
-  "requirements": []
+  "codeowners": ["@richardledecky"],
+  "version": "1.0.0"
 }
