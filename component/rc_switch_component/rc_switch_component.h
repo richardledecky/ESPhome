@@ -1,36 +1,26 @@
 #pragma once
-#include "esphome.h"
-#include <RCSwitch.h>
+
+#include "esphome/core/automation.h"
+#include "esphome/core/component.h"
+#include "RCSwitch.h"
 
 namespace esphome {
 namespace rc_switch_component {
 
-class RCSwitchTransmitter : public Component {
+class SendRCSwitchAction : public esphome::Action<> {
  public:
-  RCSwitch mySwitch;
+  void set_code(uint32_t code) { code_ = code; }
+  void set_gpio(int gpio) { gpio_ = gpio; }
 
-  void setup() override {
-    mySwitch.enableTransmit(4);        // GPIO4 = TX pin
-    mySwitch.setProtocol(1);           // Protokol 1
-    mySwitch.setPulseLength(345);      // Pulse length
-    mySwitch.setRepeatTransmit(10);    // Repeat 10x
+  template<typename... Ts> void play(Ts... x) {
+    RCSwitch sw;
+    sw.enableTransmit(gpio_);
+    sw.send(code_, 24);
   }
 
-  void send_code(unsigned long code) {
-    mySwitch.send(code, 24);           // 24-bitový kód
-  }
-};
-
-class SendRCSwitchAction : public Action<float> {
- public:
-  RCSwitchTransmitter *parent;
-  unsigned long code;
-
-  void play(float x) override {
-    if (parent != nullptr) {
-      parent->send_code(code);
-    }
-  }
+ protected:
+  uint32_t code_{0};
+  int gpio_{23};
 };
 
 }  // namespace rc_switch_component
