@@ -1,19 +1,25 @@
 import esphome.codegen as cg
 import esphome.config_validation as cv
+from esphome.const import CONF_ID
 
-CODEOWNERS = ["@richardledecky"]
-DEPENDENCIES = []
-AUTO_LOAD = []
+rc_switch_ns = cg.esphome_ns.namespace("rc_switch_component")
+SendRCSwitchAction = rc_switch_ns.class_("SendRCSwitchAction", cg.Action)
 
-ns = cg.esphome_ns.namespace("rc_switch_component")
+CONF_CODE = "code"
+CONF_GPIO = "gpio"
 
-RCSwitchTransmitter = ns.class_("RCSwitchTransmitter", cg.Component)
-SendRCSwitchAction = ns.class_("SendRCSwitchAction", cg.Action)
+RC_SWITCH_ACTION_SCHEMA = cv.Schema(
+    {
+        cv.GenerateID(): cv.declare_id(SendRCSwitchAction),
+        cv.Required(CONF_CODE): cv.uint32_t,
+        cv.Optional(CONF_GPIO, default=23): cv.int_,
+    }
+)
 
-CONFIG_SCHEMA = cv.Schema({
-    cv.GenerateID(): cv.declare_id(RCSwitchTransmitter),
-}).extend(cv.COMPONENT_SCHEMA)
-
-async def to_code(config):
-    var = cg.new_Pvariable(config[cv.GenerateID()])
-    await cg.register_component(var, config)
+@cg.register_action("rc_switch_component.send", SendRCSwitchAction, RC_SWITCH_ACTION_SCHEMA)
+async def rc_switch_send_to_code(config, action_id, template_arg, args):
+    var = cg.new_Pvariable(action_id, template_arg)
+    cg.add(var.set_code(config[CONF_CODE]))
+    cg.add(var.set_gpio(config[CONF_GPIO]))
+    cg.add_library("sui77/rc-switch", None)
+    return var
