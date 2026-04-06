@@ -10,8 +10,11 @@ DEPENDENCIES = []
 
 rc_switch_ns = cg.esphome_ns.namespace("rc_switch_component")
 
+# Action sa berie z esphome core namespace, nie z cg
+Action = cg.esphome_ns.class_("Action")
+
 SendRCSwitchAction = rc_switch_ns.class_(
-    "SendRCSwitchAction", cg.Action
+    "SendRCSwitchAction", Action
 )
 
 CONF_CODE = "code"
@@ -35,10 +38,4 @@ RC_SWITCH_SEND_SCHEMA = cv.Schema(
     SendRCSwitchAction,
     RC_SWITCH_SEND_SCHEMA,
 )
-async def rc_switch_send_to_code(config, action_id, template_arg, args):
-    _LOGGER.info("rc_switch_component action called!")
-    var = cg.new_Pvariable(action_id, template_arg)
-    cg.add(var.set_code(config[CONF_CODE]))
-    cg.add(var.set_gpio(config[CONF_GPIO]))
-    cg.add_library("sui77/rc-switch", None)
-    return var
+async def rc_switch_send_to_code(config,
