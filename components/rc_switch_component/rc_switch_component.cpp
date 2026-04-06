@@ -3,7 +3,7 @@
 namespace esphome {
 namespace rc_switch_component {
 
-// Nothing special here, everything is inline in the header.
+// nothing needed here
 
 }  // namespace rc_switch_component
 }  // namespace esphome
