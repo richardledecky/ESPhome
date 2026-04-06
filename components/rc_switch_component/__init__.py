@@ -2,6 +2,7 @@ import logging
 import esphome.codegen as cg
 import esphome.config_validation as cv
 from esphome.const import CONF_ID
+from esphome import automation
 
 _LOGGER = logging.getLogger(__name__)
 
@@ -28,7 +29,7 @@ RC_SWITCH_SEND_SCHEMA = cv.Schema({
     cv.Optional(CONF_GPIO, default=23): cv.int_,
 })
 
-@cg.register_action("rc_switch_component.send", SendRCSwitchAction, RC_SWITCH_SEND_SCHEMA)
+@automation.register_action("rc_switch_component.send", SendRCSwitchAction, RC_SWITCH_SEND_SCHEMA)
 async def rc_switch_send_to_code(config, action_id, template_arg, args):
     var = cg.new_Pvariable(action_id, template_arg)
     cg.add(var.set_code(config[CONF_CODE]))
