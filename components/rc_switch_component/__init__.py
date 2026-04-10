@@ -1,53 +1,52 @@
-#pragma once
+import logging
+import esphome.codegen as cg
+import esphome.config_validation as cv
+from esphome.const import CONF_ID
+from esphome import automation
 
-#include "esphome/core/component.h"
-#include "esphome/core/automation.h"
-#include <RCSwitch.h>
+_LOGGER = logging.getLogger(__name__)
 
-namespace esphome {
-namespace rc_switch_component {
+CODEOWNERS = ["@richardledecky"]
+DEPENDENCIES = []
 
-class RCSwitchComponent : public Component {
- public:
-  void set_gpio(int gpio) { gpio_ = gpio; }
+rc_switch_ns = cg.esphome_ns.namespace("rc_switch_component")
 
-  void setup() override {
-    sw_.enableTransmit(gpio_);
-    sw_.setProtocol(1);
-    sw_.setPulseLength(350);
-    sw_.setRepeatTransmit(10);
-  }
+RCSwitchComponent = rc_switch_ns.class_("RCSwitchComponent", cg.Component)
+SendRCSwitchAction = rc_switch_ns.class_("SendRCSwitchAction", automation.Action)
 
-  void send(uint32_t code, uint8_t length) {
-    sw_.send(code, length);
-  }
+CONF_CODE = "code"
+CONF_GPIO = "gpio"
 
- protected:
-  RCSwitch sw_;
-  int gpio_{23};
-};
+CONFIG_SCHEMA = cv.Schema({
+    cv.GenerateID(): cv.declare_id(RCSwitchComponent),
+    cv.Optional(CONF_GPIO, default=23): cv.int_,
+}).extend(cv.COMPONENT_SCHEMA)
 
-// ================= ACTION =================
+async def to_code(config):
+    var = cg.new_Pvariable(config[CONF_ID])
+    cg.add(var.set_gpio(config[CONF_GPIO]))
+    await cg.register_component(var, config)
 
-template<typename... Ts>
-class SendRCSwitchAction : public Action<Ts...> {
- public:
-  void set_parent(RCSwitchComponent *parent) { parent_ = parent; }
-  void set_code(uint32_t code) { code_ = code; }
-  void set_gpio(int gpio) { gpio_ = gpio; }
+# ========== ACTION ==========
 
-  void play(Ts... x) override {
-    if (parent_ == nullptr)
-      return;
+RC_SWITCH_SEND_SCHEMA = cv.Schema({
+    cv.GenerateID(): cv.use_id(RCSwitchComponent),
+    cv.Required(CONF_CODE): cv.positive_int,
+})
 
-    parent_->send(code_, 24);
-  }
+@automation.register_action(
+    "rc_switch_component.send",
+    SendRCSwitchAction,
+    RC_SWITCH_SEND_SCHEMA
+)
+async def rc_switch_send_to_code(config, action_id, template_arg, args):
 
- protected:
-  RCSwitchComponent *parent_{nullptr};
-  uint32_t code_{0};
-  int gpio_{23};
-};
+    var = cg.new_Pvariable(action_id, template_arg)
 
-}  // namespace rc_switch_component
-}  // namespace esphome
+    parent = await cg.get_variable(config[CONF_ID])
+
+    cg.add(var.set_parent(parent))
+    cg.add(var.set_code(config[CONF_CODE]))
+    cg.add(var.set_gpio(0))
+
+    return var
