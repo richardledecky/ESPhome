@@ -1,5 +1,4 @@
 #pragma once
-
 #include "esphome/core/component.h"
 #include "esphome/core/automation.h"
 #include <RCSwitch.h>
@@ -15,7 +14,7 @@ class RCSwitchComponent : public Component {
     sw_.enableTransmit(gpio_);
     sw_.setProtocol(1);
     sw_.setPulseLength(350);
-    sw_.setRepeatTransmit(10);
+    sw_.setRepeatTransmit(1);  // ← OPRAVENÉ: bolo 10, YAML robí repeat sám
   }
 
   void send(uint32_t code, uint8_t length) {
@@ -28,7 +27,6 @@ class RCSwitchComponent : public Component {
 };
 
 // ================= ACTION =================
-
 template<typename... Ts>
 class SendRCSwitchAction : public Action<Ts...> {
  public:
@@ -39,7 +37,6 @@ class SendRCSwitchAction : public Action<Ts...> {
   void play(Ts... x) override {
     if (parent_ == nullptr)
       return;
-
     parent_->send(code_, 24);
   }
 
