@@ -14,7 +14,7 @@ class RCSwitchComponent : public Component {
     sw_.enableTransmit(gpio_);
     sw_.setProtocol(1);
     sw_.setPulseLength(350);
-    sw_.setRepeatTransmit(1);  // ← OPRAVENÉ: bolo 10, YAML robí repeat sám
+    sw_.setRepeatTransmit(1);  // YAML repeat robí opakovanie sám
   }
 
   void send(uint32_t code, uint8_t length) {
@@ -34,7 +34,8 @@ class SendRCSwitchAction : public Action<Ts...> {
   void set_code(uint32_t code) { code_ = code; }
   void set_gpio(int gpio) { gpio_ = gpio; }
 
-  void play(Ts... x) override {
+  // ← OPRAVENÉ: play(Ts... x) → play(const Ts &...x)
+  void play(const Ts &...x) override {
     if (parent_ == nullptr)
       return;
     parent_->send(code_, 24);
